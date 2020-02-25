@@ -10,7 +10,9 @@ import '@mapbox/assembly/dist/assembly.css';
 // import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder'
 import '@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css'
 
-import Geocoder from '../components/Geocoder'
+// import Select from 'react-select'
+import AsyncSelect from 'react-select/async'
+
 import { Clock } from '../components/Clock'
 import { Attribution } from '../components/Attribution'
 import { Popup } from '../components/Popup'
@@ -22,6 +24,7 @@ type State =
   {
     loading: boolean
   }
+
 
 // const homeUrl: string = "https://jamiecook.dev/"
 
@@ -39,6 +42,27 @@ export class App extends React.Component {
     this.map = null;
     this.mapContainer = null;
     this.popup = new mapboxgl.Popup({ closeButton: false, closeOnClick: false });
+  }
+
+  promiseOptions(inputValue: string) {
+    return new Promise(resolve => {
+      console.log(inputValue);
+      var token = mapboxgl.accessToken;
+      var url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${inputValue}.json?access_token=${token}`;
+      var uri = encodeURI(url);
+      fetch(uri)
+        .then(res => res.json())
+        .then(data => {
+          let g = (x: any) => { return {value: x.center, label: x.place_name } }
+          var locationOptions = data.features.map(g)
+          let f = () => { resolve(locationOptions) }
+          setTimeout(f, 1000);
+        })
+        .catch(() => {
+          console.log("ERROR");
+        });
+
+    })
   }
 
   componentDidMount() {
@@ -65,8 +89,6 @@ export class App extends React.Component {
       compact: true,
       customAttribution: attribution.map(ReactDOMServer.renderToString).join(' ')
     }));
-
-    var geocoder = new Geocoder({map: this.map});
 
     this.map.on('load', () => {
 
@@ -132,6 +154,7 @@ export class App extends React.Component {
       this.map.on('mouseenter', 'qld-catchments-layer', (e: mapboxgl.EventData) => console.log(e.features[0]));
       console.log("Setting mouse");
 
+
     });
   }
 
@@ -160,13 +183,21 @@ export class App extends React.Component {
 
   }
 
+  // <Geocoder map={this.map} />
+  // <Select options={this.options} className="z1 w600 pl36" />
   render() {
     const { loading } = this.state;
+    let gotoSearch = (selectedOption: any) => {
+      console.log(selectedOption);
+      this.map.flyTo({center: selectedOption.value });
+    }
+
     return (
       <div>
         <Clock />
         <LoadingOverlay visible={loading} />
-        <Geocoder map={this.map} />
+
+        <AsyncSelect loadOptions={this.promiseOptions} className="z1 w600 pl36" onChange={gotoSearch} />
         <div ref={el => this.mapContainer = el} className="absolute top right left bottom" />
       </div>
     );

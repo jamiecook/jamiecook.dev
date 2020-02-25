@@ -10,10 +10,12 @@
     "@types/react": "^16.9.5",
     "@types/react-dom": "^16.9.1",
     "@types/underscore": "^1.9.4",
+    "@types/react-select": "*",
     "mapbox-gl": "^1.8.0",
     "react": "^16.10.2",
     "react-dom": "^16.10.2",
     "react-scripts": "3.2.0",
+    "react-select": "*",
     "typescript": "^3.6.3",
     "underscore": "^1.9.1"
   },
